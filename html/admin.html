@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理後台</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 40px;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+        button {
+            padding: 5px 10px;
+            cursor: pointer;
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 3px;
+        }
+        button:hover {
+            background-color: #c82333;
+        }
+    </style>
+</head>
+<body>
+    <h1>管理後台</h1>
+    
+    <h2>使用者列表</h2>
+    <table id="userTable">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>帳號</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- 使用者資料會動態插入 -->
+        </tbody>
+    </table>
+
+    <h2>便利貼列表</h2>
+    <table id="noteTable">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>發布者</th>
+                <th>內容</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- 便利貼資料會動態插入 -->
+        </tbody>
+    </table>
+
+    <script>
+        function fetchUsers() {
+            fetch('/users')
+                .then(response => response.text())
+                .then(data => {
+                    document.getElementById('userTable').querySelector('tbody').innerHTML = data;
+                });
+        }
+        
+        function fetchNotes() {
+            fetch('/notes')
+                .then(response => response.json())
+                .then(notes => {
+                    const tbody = document.getElementById('noteTable').querySelector('tbody');
+                    tbody.innerHTML = '';
+                    notes.forEach(note => {
+                        tbody.innerHTML += `
+                            <tr>
+                                <td>${note.id}</td>
+                                <td>${note.postby}</td>
+                                <td>${note.content}</td>
+                                <td><button onclick="deleteNote(${note.id})">刪除</button></td>
+                            </tr>
+                        `;
+                    });
+                });
+        }
+
+        function deleteUser(id, username) {
+            if (username === 'admin') {
+                alert('你為什麼會想要刪除管理員帳號???');
+                return;
+            }
+            if (confirm('確定要刪除該使用者?')) {
+                fetch('/delete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: 'id=' + id
+                }).then(() => {
+                    alert('刪除成功!');
+                    fetchUsers();
+                });
+            }
+        }
+
+        function deleteNote(id) {
+            if (confirm('確定要刪除該便利貼?')) {
+                fetch('/delete_note', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: 'id=' + id
+                }).then(() => {
+                    alert('刪除成功!');
+                    fetchNotes();
+                });
+            }
+        }
+
+        window.onload = function() {
+            fetchUsers();
+            fetchNotes();
+        };
+    </script>
+</body>
+</html>
