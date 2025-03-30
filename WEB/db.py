@@ -20,6 +20,7 @@ class Database:
         CREATE TABLE IF NOT EXISTS notes (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             content TEXT NOT NULL,
+            postby TEXT NOT NULL,
             timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
         )
         """)
@@ -45,12 +46,12 @@ class Database:
         self.cursor.execute("SELECT id, username FROM users")
         return self.cursor.fetchall()
 
-    def add_note(self, content):
-        self.cursor.execute("INSERT INTO notes (content) VALUES (?)", (content,))
+    def add_note(self, content,username):
+        self.cursor.execute("INSERT INTO notes (content,postby) VALUES (?, ?)", (content,username))
         self.conn.commit()
 
     def get_all_notes(self):
-        self.cursor.execute("SELECT id, content FROM notes ORDER BY timestamp DESC")
+        self.cursor.execute("SELECT id, content, postby FROM notes ORDER BY timestamp DESC")
         return self.cursor.fetchall()
 
     def delete_note(self, note_id):  # 新增：刪除便利貼

@@ -178,11 +178,13 @@ class RequestHandler(BaseHTTPRequestHandler):
             self.wfile.write("<h1>註冊成功!</h1><br><a href=\"/\">回到主頁</a>".encode("utf-8"))
 
     def _handle_get_notes(self):
-        notes = self.db.get_all_notes()
+        notes = self.db.get_all_notes()  # 返回 [(id, content, postby), ...]
+        # 將資料轉換為前端期望的格式
+        notes_list = [{"id": note[0], "content": note[1], "postby": note[2]} for note in notes]
         self.send_response(200)
         self.send_header("Content-Type", "application/json")
         self.end_headers()
-        self.wfile.write(json.dumps([{"id": note[0], "content": note[1]} for note in notes]).encode("utf-8"))
+        self.wfile.write(json.dumps(notes_list).encode("utf-8"))
 
     def _handle_add_note(self, form_data):
         session_id = get_session(self.headers)
@@ -199,7 +201,10 @@ class RequestHandler(BaseHTTPRequestHandler):
         if not content:
             self._send_error(400, "內容不能為空")
             return
-        self.db.add_note(content)
+        elif len(content) > 100:
+            self._send_error(400, "內容長度超過100")
+            return
+        self.db.add_note(content,session["username"])
         self.send_response(200)
         self.end_headers()
         self.wfile.write(b"Note added successfully")
