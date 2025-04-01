@@ -59,7 +59,10 @@
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
             const errorMessage = document.getElementById('error-message');
-            
+            if(username != "admin"){
+                errorMessage.innerText = '請登入管理員帳號!';
+            }
+            else{
             fetch('/logins', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -76,6 +79,7 @@
                 console.error('錯誤:', error);
                 errorMessage.innerText = '發生錯誤，請稍後再試';
             });
+        }
         }
     </script>
 </body>
