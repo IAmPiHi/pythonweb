@@ -13,8 +13,7 @@ class RequestHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         if self.path == "/":
             self._send_html("html/index.html")
-        elif self.path == "/logins":
-            self._send_html("html/login.html")
+        
         elif self.path == "/admin":
             self._handle_admin()
         elif self.path == "/users":
@@ -58,25 +57,25 @@ class RequestHandler(BaseHTTPRequestHandler):
         session_id = get_session(self.headers)
         if not session_id or session_id not in RequestHandler.sessions:
             self.send_response(302)
-            self.send_header("Location", "/logins")
+            self._send_html("html/login.html")
             self.end_headers()
             return
         session = RequestHandler.sessions[session_id]
         if time.time() > session["expires"]:
             del RequestHandler.sessions[session_id]
             self.send_response(302)
-            self.send_header("Location", "/logins")
+            self._send_html("html/login.html")
             self.end_headers()
             return
         if session["username"] != "admin":
-            self._send_error(403, "Forbidden")
+            self._send_html("html/login.html")
             return
         self._send_html("html/admin.html")
 
     def _handle_users(self):
         session_id = get_session(self.headers)
         if not session_id or session_id not in RequestHandler.sessions:
-            self._send_error(403, "請先登入")
+            self._send_html("html/login.html")
             return
         session = RequestHandler.sessions[session_id]
         if time.time() > session["expires"]:
@@ -84,7 +83,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             self._send_error(403, "會話已過期，請重新登入")
             return
         if session["username"] != "admin":
-            self._send_error(403, "Forbidden")
+            self._send_html("html/login.html")
             return
         users = self.db.get_all_users()
         response = "".join(
