@@ -15,5 +15,6 @@
    git clone https://github.com/IAmPiHi/pythonweb.git
    cd project
 ### 運行
+```bash
 python server.py
    
